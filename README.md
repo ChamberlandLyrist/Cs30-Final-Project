@@ -1,2 +1,12 @@
 # Cs30-Final-Project
-The final Braincell doo doo doo duhhh, doo doo doo doo duhh...
+
+My final project will be about 
+
+
+## Needs to have list
+-
+-
+
+## Nice to have list
+-
+-

@@ -1,6 +1,6 @@
 # Cs30-Final-Project
 
-My final project will be top down shooter game
+My final project will be top down shooter card game 
 
 
 ## Needs to have list
@@ -8,9 +8,13 @@ My final project will be top down shooter game
 -mouse interaction
 -prebuilt level
 -enemies
--"among us" style vision
+-different ammo types
+
+
 
 ## Nice to have list
+-"among us" style vision
 -procedural generation
 -cool graphics
+-level select screen
 -more content

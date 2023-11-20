@@ -16,5 +16,6 @@ My final project will be top down shooter card game
 -"among us" style vision
 -procedural generation
 -cool graphics
--level select screen
+-start screen
+-multiplayer
 -more content

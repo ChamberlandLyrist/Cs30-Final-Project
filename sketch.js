@@ -6,6 +6,7 @@
 // - describe what you did to take this project "above and beyond"
 
 let player1;
+let border1,border2,border3,border4;
 let engine;
 
 function setup() {
@@ -18,8 +19,15 @@ function setup() {
   Matter.Engine.update(engine, window.requestAnimationFrame, 50);
   Matter.Runner.run(engine);
 
-  player1 = new Player("red", 5/20,windowHeight/2/ratio,windowWidth/2/ratio);
+  player1 = new Player("red", 5/ratio,windowHeight/2/ratio,windowWidth/2/ratio);
   Matter.World.add(engine.world, [player1.body]);
+
+  border1 = new Wall("blue", 6/ratio, windowHeight/ratio, 0, windowHeight/2/ratio);
+  border2 = new Wall("blue", windowWidth/ratio, 6/ratio, windowWidth/2/ratio, 0);
+  border3 = new Wall("blue", 6/ratio, windowHeight/ratio, windowWidth, windowHeight/2/ratio);
+  border4 = new Wall("blue", windowWidth/ratio, 6/ratio, windowWidth/2/ratio, windowHeight);
+  Matter.World.add(engine.world, [border1.body,border2.body,border3.body,border4.body]);
+  
 
 }
 
@@ -31,6 +39,9 @@ function draw() {
   createCanvas(windowWidth, windowHeight);
   player1.move();
   player1.display();
+  for (let wally of [border1,border2,border3,border4]){
+    wally.display();
+  }
 
 }
 
@@ -49,38 +60,40 @@ class Player{
   constructor(colour, radius,x,y){
     this.colour = colour;
     this.size = radius;
-    this.spd = 5*(10**-7);
+    this.spd = 9*10**-9;
     this.dashcool = 3;
-    this.shotcool = 0;
     this.body = Matter.Bodies.circle(x,y,radius*2,{mass:0.001});
-    this.maxSpeed = 5*10**-5;
+    this.maxSpeed = 8*10**-1;
   }
 
   move(){
     // console.log(this.spd);
-    let a = keyIsDown(65);
-    let d = keyIsDown(68);
+
+    let difx = mouseX - this.body.position.x*ratio ;
+    let dify = mouseY - this.body.position.y*ratio ;
+    // console.log(difx,dify);
+    let vicky = Matter.Vector.normalise({x:difx, y:dify});
+
+    // console.log(vicky);
     let w = keyIsDown(87);
     let s = keyIsDown(83);
-    if(a){
-      Matter.Body.applyForce(this.body, {x: this.body.position.x, y: this.body.position.y}, {x:-1*this.spd, y:0});
-    }
-    if (d){
-      Matter.Body.applyForce(this.body, {x: this.body.position.x, y: this.body.position.y}, {x:this.spd, y:0});
-    }
+
     if (w){
-      Matter.Body.applyForce(this.body, {x: this.body.position.x, y: this.body.position.y}, {x:0, y:-1*this.spd});
-      // console.log("move up");
+      Matter.Body.applyForce(this.body, {x:this.body.position.x, y:this.body.position.y},{x:vicky.x*this.spd, y:vicky.y*this.spd});
     }
-    if (s){
-      Matter.Body.applyForce(this.body, {x: this.body.position.x, y: this.body.position.y}, {x:0, y:this.spd});
+    if(s){
+      Matter.Body.applyForce(this.body, {x:this.body.position.x, y:this.body.position.y},{x:vicky.x*this.spd*-0.5, y:vicky.y*this.spd*-0.5});
     }
 
     const velocity = this.body.velocity;
     const speed = Matter.Vector.magnitude(velocity);
-    if (a||d||w||s){
+    if (w){
       if(speed > this.maxSpeed){
         Matter.Body.setVelocity(this.body,Matter.Vector.mult(Matter.Vector.normalise(velocity),this.maxSpeed));
+      }
+    }else if (s){
+      if(speed > this.maxSpeed*0.5){
+        Matter.Body.setVelocity(this.body,Matter.Vector.mult(Matter.Vector.normalise(velocity),this.maxSpeed*0.5));
       }
     }
     // console.log(this.body.position);

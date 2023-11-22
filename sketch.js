@@ -19,7 +19,7 @@ function setup() {
   Matter.Engine.update(engine, window.requestAnimationFrame, 50);
   Matter.Runner.run(engine);
 
-  player1 = new Player("red", 5/ratio,windowHeight/2/ratio,windowWidth/2/ratio);
+  player1 = new Player("red", 10/ratio, 20/ratio,windowHeight/2/ratio,windowWidth/2/ratio);
   Matter.World.add(engine.world, [player1.body]);
 
   border1 = new Wall("blue", 6/ratio, windowHeight/ratio, 0, windowHeight/2/ratio);
@@ -57,13 +57,17 @@ function smallest(){
 }
 
 class Player{
-  constructor(colour, radius,x,y){
+  constructor(colour, width,length,x,y){
     this.colour = colour;
-    this.size = radius;
-    this.spd = 9*10**-9;
+    this.width = width;
+    this.length = length;
+    this.spd = 5*10**-5;
     this.dashcool = 3;
-    this.body = Matter.Bodies.circle(x,y,radius*2,{mass:0.001});
-    this.maxSpeed = 8*10**-1;
+    this.body = Matter.Bodies.rectangle(x,y,length,width,{mass:0.1});
+    this.maxSpeed = 9*10**-5;
+    this.angle = 0;
+    this.vector = {x:0, y:0};
+    this.handling = 5*10**-8;
   }
 
   move(){
@@ -74,15 +78,28 @@ class Player{
     // console.log(difx,dify);
     let vicky = Matter.Vector.normalise({x:difx, y:dify});
 
+    let a = keyIsDown(65);
+    let d = keyIsDown(68);
+
+    if(d){
+      this.angle += this.handling*map(this.body.speed,0,this.maxSpeed,0,1);
+    }
+    if(a){
+      this.angle -= this.handling*map(this.body.speed,0,this.maxSpeed,0,1);
+    }
+    Matter.Body.setAngle(this.body, this.angle,true);
+    this.vector = {x:Math.cos(this.angle), y:Math.sin(this.angle)};
+    console.log(this.vector);
+
     // console.log(vicky);
     let w = keyIsDown(87);
     let s = keyIsDown(83);
 
     if (w){
-      Matter.Body.applyForce(this.body, {x:this.body.position.x, y:this.body.position.y},{x:vicky.x*this.spd, y:vicky.y*this.spd});
+      Matter.Body.applyForce(this.body, {x:this.body.position.x, y:this.body.position.y},{x:this.vector.x*this.spd, y:this.vector.y*this.spd});
     }
     if(s){
-      Matter.Body.applyForce(this.body, {x:this.body.position.x, y:this.body.position.y},{x:vicky.x*this.spd*-0.5, y:vicky.y*this.spd*-0.5});
+      Matter.Body.applyForce(this.body, {x:this.body.position.x, y:this.body.position.y},{x:this.vector.x*this.spd*-0.5, y:this.vector.y*this.spd*-0.5});
     }
 
     const velocity = this.body.velocity;
@@ -102,7 +119,15 @@ class Player{
   display(){
     fill(this.colour);
     noStroke();
-    circle(this.body.position.x*ratio,this.body.position.y*ratio,this.size*2*ratio);
+    
+    push();
+    translate(this.body.position.x*ratio,this.body.position.y*ratio);
+    rotate(this.angle);
+    rectMode(CENTER);
+    rect(0,0,this.length*ratio,this.width*ratio);
+    pop();
+    fill("black");
+    circle(this.body.position.x*ratio+this.vector.x*3.5, this.body.position.y*ratio+this.vector.y*3.5, this.length/this.width*5);
   }
 }
 
@@ -118,6 +143,7 @@ class Wall{
     fill(this.colour);
     noStroke();
     rectMode(CENTER);
+    
     rect(this.body.position.x*ratio,this.body.position.y*ratio,this.width*ratio,this.height*ratio);
   }
 }

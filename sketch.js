@@ -61,22 +61,22 @@ class Player{
     this.colour = colour;
     this.width = width;
     this.length = length;
-    this.spd = 5*10**-5;
+    this.spd = 7*10**-5;
     this.dashcool = 3;
     this.body = Matter.Bodies.rectangle(x,y,length,width,{mass:0.1});
-    this.maxSpeed = 9*10**-5;
+    this.maxSpeed = 2*10**-4;
     this.angle = 0;
     this.vector = {x:0, y:0};
-    this.handling = 5*10**-8;
+    this.handling = 5*10**-5;
   }
 
   move(){
     // console.log(this.spd);
 
-    let difx = mouseX - this.body.position.x*ratio ;
-    let dify = mouseY - this.body.position.y*ratio ;
-    // console.log(difx,dify);
-    let vicky = Matter.Vector.normalise({x:difx, y:dify});
+    // let difx = mouseX - this.body.position.x*ratio ;
+    // let dify = mouseY - this.body.position.y*ratio ;
+    // // console.log(difx,dify);
+    // let vicky = Matter.Vector.normalise({x:difx, y:dify});
 
     let a = keyIsDown(65);
     let d = keyIsDown(68);
@@ -89,7 +89,7 @@ class Player{
     }
     Matter.Body.setAngle(this.body, this.angle,true);
     this.vector = {x:Math.cos(this.angle), y:Math.sin(this.angle)};
-    console.log(this.vector);
+    // console.log(this.vector);
 
     // console.log(vicky);
     let w = keyIsDown(87);

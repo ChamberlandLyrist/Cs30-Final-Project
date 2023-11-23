@@ -61,13 +61,14 @@ class Player{
     this.colour = colour;
     this.width = width;
     this.length = length;
-    this.spd = 7*10**-5;
+    this.spd = 4*10**-5;
     this.dashcool = 3;
     this.body = Matter.Bodies.rectangle(x,y,length,width,{mass:0.1});
-    this.maxSpeed = 2*10**-4;
+    this.maxSpeed = 0.1;
     this.angle = 0;
     this.vector = {x:0, y:0};
-    this.handling = 5*10**-5;
+    this.handling = 5*10**-6;
+    this.spdbar = {x:0, y:0};
   }
 
   move(){
@@ -82,10 +83,10 @@ class Player{
     let d = keyIsDown(68);
 
     if(d){
-      this.angle += this.handling*map(this.body.speed,0,this.maxSpeed,0,1);
+      this.angle += this.handling*map(this.body.speed,0,this.spd,0,1);
     }
     if(a){
-      this.angle -= this.handling*map(this.body.speed,0,this.maxSpeed,0,1);
+      this.angle -= this.handling*map(this.body.speed,0,this.spd,0,1);
     }
     Matter.Body.setAngle(this.body, this.angle,true);
     this.vector = {x:Math.cos(this.angle), y:Math.sin(this.angle)};
@@ -95,12 +96,27 @@ class Player{
     let w = keyIsDown(87);
     let s = keyIsDown(83);
 
+    Matter.Body.setInertia(this.body, 1);
     if (w){
+      this.spdbar.x += this.vector.x*0.0001;
+      this.spdbar.y += this.vector.x*0.0001;
       Matter.Body.applyForce(this.body, {x:this.body.position.x, y:this.body.position.y},{x:this.vector.x*this.spd, y:this.vector.y*this.spd});
     }
     if(s){
-      Matter.Body.applyForce(this.body, {x:this.body.position.x, y:this.body.position.y},{x:this.vector.x*this.spd*-0.5, y:this.vector.y*this.spd*-0.5});
+      this.go = true;
+      this.spdbar.x -= this.vector.x*0.0009;
+      this.spdbar.x -= this.vector.x*0.0009;
+      Matter.Body.applyForce(this.body, {x:this.body.position.x, y:this.body.position.y},{x:(this.vector.x*this.spd*-0.5), y:(this.vector.y*this.spd*-0.5)});
     }
+    Matter.Body.applyForce(this.body, {x:this.body.position.x, y:this.body.position.y},{x:this.spdbar.x*this.spd,y:this.spdbar.y*this.spd});
+    if(!s&&!w && this.spdbar.x !== 0 && this.spdbar.y !== 0){
+      this.spdbar.x -= this.spdbar.x/Math.abs(this.spdbar.x)*0.0001;
+      this.spdbar.y -= this.spdbar.y/Math.abs(this.spdbar.y)*0.0001;
+    }
+    if (Math.abs(this.spdbar) > this.maxSpeed){
+      this.spdbar = this.spdbar/Math.abs(this.spdbar)*this.maxSpeed;
+    }
+    
 
     const velocity = this.body.velocity;
     const speed = Matter.Vector.magnitude(velocity);

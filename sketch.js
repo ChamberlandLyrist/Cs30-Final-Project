@@ -14,7 +14,7 @@ function setup() {
   let smoll = smallest();
   ratio = smoll;
 
-  engine = Matter.Engine.create({enableSleeping: false});
+  engine = Matter.Engine.create({enableSleeping: false, enableRestituion:true});
   engine.world.gravity.y = 0;
   Matter.Engine.update(engine, window.requestAnimationFrame, 50);
   Matter.Runner.run(engine);
@@ -33,10 +33,10 @@ function setup() {
 
 let ratio;
 function draw() {
-  background(220);
-  let smoll = smallest();
-  ratio = smoll;
-  createCanvas(windowWidth, windowHeight);
+  // background(220);
+  // let smoll = smallest();
+  // ratio = smoll;
+  // createCanvas(windowWidth, windowHeight);
   player1.move();
   player1.display();
   for (let wally of [border1,border2,border3,border4]){
@@ -61,14 +61,15 @@ class Player{
     this.colour = colour;
     this.width = width;
     this.length = length;
-    this.spd = 4*10**-5;
+    this.spd = 7*10**-7;
     this.dashcool = 3;
-    this.body = Matter.Bodies.rectangle(x,y,length,width,{mass:0.1});
+    this.body = Matter.Bodies.rectangle(x,y,length,width,{mass:0.1,restitution:0.1});
     this.maxSpeed = 0.1;
     this.angle = 0;
     this.vector = {x:0, y:0};
-    this.handling = 5*10**-6;
+    this.handling = 5*10**-7;
     this.spdbar = {x:0, y:0};
+    this.inert = 7*10**-3;
   }
 
   move(){
@@ -81,38 +82,84 @@ class Player{
 
     let a = keyIsDown(65);
     let d = keyIsDown(68);
-
+    let spin= this.handling*map(this.body.speed,0,this.maxSpeed/10000,0,7);
     if(d){
-      this.angle += this.handling*map(this.body.speed,0,this.spd,0,1);
+      this.angle += spin;
+      this.body.angularSpeed += spin;
     }
     if(a){
-      this.angle -= this.handling*map(this.body.speed,0,this.spd,0,1);
+      this.angle -= spin;
+      this.body.angularSpeed -= spin;
     }
-    Matter.Body.setAngle(this.body, this.angle,true);
+    // Matter.Body.setAngularSpeed(this.body, this.angle/2,true);
     this.vector = {x:Math.cos(this.angle), y:Math.sin(this.angle)};
     // console.log(this.vector);
 
     // console.log(vicky);
     let w = keyIsDown(87);
-    let s = keyIsDown(83);
+    let s = keyIsDown(32); //83
 
-    Matter.Body.setInertia(this.body, 1);
+    // Matter.Body.setInertia(this.body, 10);
+    // this.spdbar = {x:this.body.force.x, y:this.body.force.y};
+    Matter.Body.applyForce(this.body, {x:this.body.position.x, y:this.body.position.y},{x:this.spdbar.x*this.spd,y:this.spdbar.y*this.spd});
     if (w){
-      this.spdbar.x += this.vector.x*0.0001;
-      this.spdbar.y += this.vector.x*0.0001;
+      // this.spdbar.x += this.vector.x*1*10**-4;
+      // this.spdbar.y += this.vector.x*1*10**-4;
+      if (this.vector.x/Math.abs(this.vector.x) === -1){
+        this.spdbar.x -= this.inert;
+      }
+      else if (this.vector.x/Math.abs(this.vector.x) === 1){
+        this.spdbar.x += this.inert;
+      }
+
+      if (this.vector.y/Math.abs(this.vector.y) === -1){
+        this.spdbar.y -= this.inert;
+      }
+      else if (this.vector.y/Math.abs(this.vector.y) === 1){
+        this.spdbar.y += this.inert;
+      }
       Matter.Body.applyForce(this.body, {x:this.body.position.x, y:this.body.position.y},{x:this.vector.x*this.spd, y:this.vector.y*this.spd});
     }
     if(s){
       this.go = true;
-      this.spdbar.x -= this.vector.x*0.0009;
-      this.spdbar.x -= this.vector.x*0.0009;
+      if (this.vector.x/Math.abs(this.vector.x) === -1){
+        this.spdbar.x += this.inert;
+      }
+      else if (this.vector.x/Math.abs(this.vector.x) === 1){
+        this.spdbar.x -= this.inert;
+      }
+
+      if (this.vector.y/Math.abs(this.vector.y) === -1){
+        this.spdbar.y += this.inert;
+      }
+      else if (this.vector.y/Math.abs(this.vector.y) === 1){
+        this.spdbar.y -= this.inert;
+      }
+      // this.spdbar.x -= this.vector.x*9*10**-4;
+      // this.spdbar.x -= this.vector.x*9*10**-4;
       Matter.Body.applyForce(this.body, {x:this.body.position.x, y:this.body.position.y},{x:(this.vector.x*this.spd*-0.5), y:(this.vector.y*this.spd*-0.5)});
     }
-    Matter.Body.applyForce(this.body, {x:this.body.position.x, y:this.body.position.y},{x:this.spdbar.x*this.spd,y:this.spdbar.y*this.spd});
-    if(!s&&!w && this.spdbar.x !== 0 && this.spdbar.y !== 0){
-      this.spdbar.x -= this.spdbar.x/Math.abs(this.spdbar.x)*0.0001;
-      this.spdbar.y -= this.spdbar.y/Math.abs(this.spdbar.y)*0.0001;
+    
+    // if (w||s){
+    //   if (this.vector.x/Math.abs(this.vector.x) === -1){
+    //     this.spdbar.x -= this.inert;
+    //   }
+    //   else if (this.vector.x/Math.abs(this.vector.x) === 1){
+    //     this.spdbar.x += this.inert;
+    //   }
+
+    //   if (this.vector.y/Math.abs(this.vector.y) === -1){
+    //     this.spdbar.y -= this.inert;
+    //   }
+    //   else if (this.vector.y/Math.abs(this.vector.y) === 1){
+    //     this.spdbar.y += this.inert;
+    //   }
+    // }
+    if(this.spdbar.x !== 0 && this.spdbar.y !== 0){
+      this.spdbar.x -= this.spdbar.x/Math.abs(this.spdbar.x)*this.inert/2;
+      this.spdbar.y -= this.spdbar.y/Math.abs(this.spdbar.y)*this.inert/2;
     }
+
     if (Math.abs(this.spdbar) > this.maxSpeed){
       this.spdbar = this.spdbar/Math.abs(this.spdbar)*this.maxSpeed;
     }

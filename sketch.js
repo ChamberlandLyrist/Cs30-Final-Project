@@ -61,15 +61,16 @@ class Player{
     this.colour = colour;
     this.width = width;
     this.length = length;
-    this.spd = 7*10**-7;
+    this.spd = 7*10**-5;
     this.dashcool = 3;
-    this.body = Matter.Bodies.rectangle(x,y,length,width,{mass:0.1,restitution:0.1});
+    this.body = Matter.Bodies.rectangle(x,y,length,width,{mass:0.15,restitution:0.1});
     this.maxSpeed = 0.1;
     this.angle = 0;
-    this.vector = {x:0, y:0};
-    this.handling = 5*10**-7;
-    this.spdbar = {x:0, y:0};
-    this.inert = 7*10**-3;
+    this.carface = {x:0, y:0};
+    this.handling = 1*10**-8;
+    this.spdbar = 0;
+    this.inert = 1;
+    this.inertia = {x:0,y:0};
   }
 
   move(){
@@ -84,15 +85,14 @@ class Player{
     let d = keyIsDown(68);
     let spin= this.handling*map(this.body.speed,0,this.maxSpeed/10000,0,7);
     if(d){
-      this.angle += spin;
-      this.body.angularSpeed += spin;
+      this.body.angle += spin;
     }
     if(a){
-      this.angle -= spin;
-      this.body.angularSpeed -= spin;
+      this.body.angle -= spin;
     }
+    this.angle = this.body.angle;
     // Matter.Body.setAngularSpeed(this.body, this.angle/2,true);
-    this.vector = {x:Math.cos(this.angle), y:Math.sin(this.angle)};
+    this.carface = {x:Math.cos(this.angle), y:Math.sin(this.angle)};
     // console.log(this.vector);
 
     // console.log(vicky);
@@ -101,43 +101,51 @@ class Player{
 
     // Matter.Body.setInertia(this.body, 10);
     // this.spdbar = {x:this.body.force.x, y:this.body.force.y};
-    Matter.Body.applyForce(this.body, {x:this.body.position.x, y:this.body.position.y},{x:this.spdbar.x*this.spd,y:this.spdbar.y*this.spd});
+    let middle = {x: (this.carface.x), y: (this.carface.y)};
+    middle = Matter.Vector.normalise(middle);
+    console.log(middle);
+    this.body.speed = 0;
+    // this.inertia.x = (this.carface.x+this.inertia.x*2)/3;
+    // this.inertia.y = (this.carface.y+this.inertia.y*2)/3;
+    Matter.Body.applyForce(this.body, {x:this.body.position.x, y:this.body.position.y},{x:this.spdbar*this.spd*middle.x,y:this.spdbar*this.spd*middle.y});
+    
     if (w){
       // this.spdbar.x += this.vector.x*1*10**-4;
       // this.spdbar.y += this.vector.x*1*10**-4;
-      if (this.vector.x/Math.abs(this.vector.x) === -1){
-        this.spdbar.x -= this.inert;
-      }
-      else if (this.vector.x/Math.abs(this.vector.x) === 1){
-        this.spdbar.x += this.inert;
-      }
+      // if (this.carface.x/Math.abs(this.carface.x) === -1){
+      //   this.spdbar -= this.inert;
+      // }
+      // else if (this.carface.x/Math.abs(this.carface.x) === 1){
+      //   this.spdbar += this.inert;
+      // }
+      this.spdbar += this.inert;
 
-      if (this.vector.y/Math.abs(this.vector.y) === -1){
-        this.spdbar.y -= this.inert;
-      }
-      else if (this.vector.y/Math.abs(this.vector.y) === 1){
-        this.spdbar.y += this.inert;
-      }
-      Matter.Body.applyForce(this.body, {x:this.body.position.x, y:this.body.position.y},{x:this.vector.x*this.spd, y:this.vector.y*this.spd});
+      // if (this.carface.y/Math.abs(this.carface.y) === -1){
+      //   this.spdbar.y -= this.inert;
+      // }
+      // else if (this.carface.y/Math.abs(this.carface.y) === 1){
+      //   this.spdbar.y += this.inert;
+      // }
+      // Matter.Body.applyForce(this.body, {x:this.body.position.x, y:this.body.position.y},{x:this.carface.x*this.spd, y:this.carface.y*this.spd});
     }
     if(s){
       this.go = true;
-      if (this.vector.x/Math.abs(this.vector.x) === -1){
-        this.spdbar.x += this.inert;
-      }
-      else if (this.vector.x/Math.abs(this.vector.x) === 1){
-        this.spdbar.x -= this.inert;
-      }
-
-      if (this.vector.y/Math.abs(this.vector.y) === -1){
-        this.spdbar.y += this.inert;
-      }
-      else if (this.vector.y/Math.abs(this.vector.y) === 1){
-        this.spdbar.y -= this.inert;
-      }
+      // if (this.carface.x/Math.abs(this.carface.x) === -1){
+      //   this.spdbar += this.inert;
+      // }
+      // else if (this.carface.x/Math.abs(this.carface.x) === 1){
+      //   this.spdbar -= this.inert;
+      // }
+      this.spdbar -= this.inert;
+      // if (this.carface.y/Math.abs(this.carface.y) === -1){
+      //   this.spdbar.y += this.inert;
+      // }
+      // else if (this.carface.y/Math.abs(this.carface.y) === 1){
+      //   this.spdbar.y -= this.inert;
+      // }
       // this.spdbar.x -= this.vector.x*9*10**-4;
       // this.spdbar.x -= this.vector.x*9*10**-4;
-      Matter.Body.applyForce(this.body, {x:this.body.position.x, y:this.body.position.y},{x:(this.vector.x*this.spd*-0.5), y:(this.vector.y*this.spd*-0.5)});
+      // Matter.Body.applyForce(this.body, {x:this.body.position.x, y:this.body.position.y},{x:(this.carface.x*this.spd*-0.5), y:(this.carface.y*this.spd*-0.5)});
     }
     
     // if (w||s){
@@ -155,16 +163,16 @@ class Player{
     //     this.spdbar.y += this.inert;
     //   }
     // }
-    if(this.spdbar.x !== 0 && this.spdbar.y !== 0){
-      this.spdbar.x -= this.spdbar.x/Math.abs(this.spdbar.x)*this.inert/2;
-      this.spdbar.y -= this.spdbar.y/Math.abs(this.spdbar.y)*this.inert/2;
-    }
+    if(this.spdbar !== 0 ){
+      this.spdbar = this.spdbar*8/9;
+      // this.spdbar -= this.spdbar/Math.abs(this.spdbar)*this.inert/2;
+      
 
-    if (Math.abs(this.spdbar) > this.maxSpeed){
-      this.spdbar = this.spdbar/Math.abs(this.spdbar)*this.maxSpeed;
-    }
+      if (Math.abs(this.spdbar) > this.maxSpeed){
+        this.spdbar = this.spdbar/Math.abs(this.spdbar)*this.maxSpeed;
+      }
     
-
+    }
     const velocity = this.body.velocity;
     const speed = Matter.Vector.magnitude(velocity);
     if (w){
@@ -179,6 +187,7 @@ class Player{
     // console.log(this.body.position);
   }
 
+
   display(){
     fill(this.colour);
     noStroke();
@@ -190,7 +199,7 @@ class Player{
     rect(0,0,this.length*ratio,this.width*ratio);
     pop();
     fill("black");
-    circle(this.body.position.x*ratio+this.vector.x*3.5, this.body.position.y*ratio+this.vector.y*3.5, this.length/this.width*5);
+    circle(this.body.position.x*ratio+this.carface.x*3.5, this.body.position.y*ratio+this.carface.y*3.5, this.length/this.width*5);
   }
 }
 
